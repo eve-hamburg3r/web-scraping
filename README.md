@@ -1,2 +1,2 @@
 # web-scraping
-1st scraping project: hktvmall products
+1st scraping project: hktvmall products (Using scrapy, and scrape via hktvmall internal api.)
