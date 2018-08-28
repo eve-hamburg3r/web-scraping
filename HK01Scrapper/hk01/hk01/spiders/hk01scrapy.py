@@ -12,7 +12,7 @@ class hk01Spider(scrapy.Spider):
     def __init__(self, parse_num, days, *args, **kwargs):
         super(hk01Spider, self).__init__(*args, **kwargs)
         self.parse_num = int(parse_num)
-        self.time_span = datetime.timedelta(days=int(days)+1, hours=8)
+        self.time_span = datetime.timedelta(days=int(days), hours=8)
         self.raw_url = 'https://www.hk01.com/%E7%A4%BE%E6%9C%83%E6%96%B0%E8%81%9E/{}'
         self.start_urls = [self.raw_url.format(self.parse_num)]
 
@@ -23,7 +23,8 @@ class hk01Spider(scrapy.Spider):
         else:
             item = {
                 'id':self.parse_num,
-                'Publish Time':response.css('time::attr(datetime)').extract_first(),
+                'Publish Time':response.css('time::attr(datetime)').extract()[0],
+                'Last Update Time':response.css('time::attr(datetime)').extract()[1],
                 'Category':response.css('div.sc-bwzfXH.jruoDg>span>a::text').extract(),
                 'Author':response.css('a.sc-gqjmRU.dhKqyP::text').extract(),
                 'Discription':response.css('p.wa4tvz-0.hmJMOX.sc-gqjmRU.jTjJUk::text').extract(),
@@ -31,9 +32,9 @@ class hk01Spider(scrapy.Spider):
             }
             yield item
             if self.first_tag:
-                self.end_time = dateutil.parser.parse(response.css('time::attr(datetime)').extract_first()) - self.time_span
+                self.end_time = dateutil.parser.parse(response.css('time::attr(datetime)').extract()[1]) - self.time_span
                 self.first_tag = False
-            publish_date = dateutil.parser.parse(response.css('time::attr(datetime)').extract_first())
+            publish_date = dateutil.parser.parse(response.css('time::attr(datetime)').extract()[1])
             if publish_date > self.end_time:
                 self.parse_num = self.parse_num - 1
                 yield scrapy.Request(url=self.raw_url.format(self.parse_num), callback=self.parse)
